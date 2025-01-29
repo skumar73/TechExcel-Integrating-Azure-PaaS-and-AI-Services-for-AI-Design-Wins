@@ -46,7 +46,9 @@ builder.Services.AddSingleton<CosmosClient>((_) =>
     var credential = new DefaultAzureCredential(
         new DefaultAzureCredentialOptions
         {
-            ManagedIdentityClientId = userAssignedClientId
+            ManagedIdentityClientId = userAssignedClientId,
+            TenantId = builder.Configuration["AZURE_TENANT_ID"]
+
         });
     CosmosClient client = new(
         accountEndpoint: builder.Configuration["CosmosDB:AccountEndpoint"]!,
@@ -156,7 +158,8 @@ app.MapGet("/Vectorize", async (string text, [FromServices] IVectorizationServic
 app.MapPost("/VectorSearch", async ([FromBody] float[] queryVector, [FromServices] IVectorizationService vectorizationService, int max_results = 0, double minimum_similarity_score = 0.8) =>
 {
     // Exercise 3 Task 3 TODO #3: Insert code to call the ExecuteVectorSearch function on the Vectorization Service. Don't forget to remove the NotImplementedException.
-    throw new NotImplementedException();
+    var results = await vectorizationService.ExecuteVectorSearch(queryVector, max_results, minimum_similarity_score);
+    return results;
 })
     .WithName("VectorSearch")
     .WithOpenApi();
